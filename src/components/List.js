@@ -16,7 +16,7 @@ function List(props) {
   
 
   return (
-    <div>
+    <div className='list'>
       {filterSong(props.songs).map(song =>
         <ListItem
           key={song.id}

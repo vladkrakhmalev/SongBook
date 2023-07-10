@@ -1,29 +1,22 @@
 import React from "react";
 import { tonalities } from "../tonalityData";
+import ContentEditable from "react-contenteditable";
 
 
 
-function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, updateOpenMenu, categories}) {
+function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decoratSong, updateOpenMenu, categories}) {
+
+  const regexpForTranspose = new RegExp(`${tonalities.join('|')}`, 'g')
 
   const textareaRef = React.useRef(null)
-  const selectCategories = categories.map((category, id) => {
-    return <option
-      value={category}
-      key={id}
-    >{category}</option>
-  })
-
-
-
   React.useLayoutEffect(() => {
     textareaRef.current.style.height = "inherit"
     textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
   }, [song.name])
 
-  function handleIsDisabled() {
-    updateIsEditSong(!isEditSong)
-  }
 
+
+  
   function handleChange(value, prop) {
     const newSong = {...song}
     newSong[prop] = value
@@ -43,11 +36,18 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, updateO
   }
 
   function transpose(isUp) {
-    const regexp = new RegExp(`${tonalities.join('|')}`, 'g')
-    const text = song.text.replaceAll(regexp, match => transposition(match, isUp))
-
+    const text = song.text.replaceAll(regexpForTranspose, match => transposition(match, isUp))
     handleChange(text, 'text')
   }
+
+
+
+  const selectCategories = categories.map((category, id) => {
+    return <option
+      value={category}
+      key={id}
+    >{category}</option>
+  })
 
 
   
@@ -81,7 +81,10 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, updateO
               <div className="menu__tonality-name">Транспонировать</div>
             </div>
             <div
-              onClick={handleIsDisabled}
+              onClick={() => {
+                editSong(decoratSong(song))
+                updateIsEditSong(!isEditSong)
+              }}
               className={"panel__btn _small _light" + (isEditSong ? " _save" : " _edit")}
             >{isEditSong ? 'Сохранить' : 'Редактировать'}</div>
             <div
@@ -108,14 +111,12 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, updateO
           onChange={e => handleChange(e.target.value, 'number')}
         />
       </div> : ''}
-      <textarea
+      <ContentEditable
         className={'song__text' + (isEditSong ? '' : " _disabled")}
-        value={song.text}
-        readOnly={!isEditSong}
-        onChange={e => handleChange(e.target.value, 'text')}
-        placeholder="Текст и аккорды песни"
+        disabled={!isEditSong}
+        onChange={e => handleChange(e.currentTarget.innerHTML, 'text')}
+        html={song.text}
       />
-      <div className="" contentEditable={true}></div>
     </div>
   )
 }

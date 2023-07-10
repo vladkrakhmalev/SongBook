@@ -2,6 +2,7 @@ import Navigation from "./components/Navigation";
 import List from "./components/List";
 import Song from "./components/Song";
 import { useState } from 'react'
+import { tonalities } from "./tonalityData";
 import { allSongs } from "./data"
 import { categories } from "./categoriesData"
 
@@ -12,12 +13,22 @@ function App() {
   const [searchText, setSearchText] = useState('')
   const [activeCategory, setActiveCategory] = useState('Все')
   const [openMenu, setOpenMenu] = useState(true)
-  const [activeSong, setActiveSong] = useState('')
+  const [activeSong, setActiveSong] = useState(null)
   const [isEditSong, setIsEditSong] = useState(false)
+
+  const regexpForDecorate = new RegExp(`${tonalities.join('m?7?|')}m?7?`, 'g')
   
 
+
+  function decoratSong(song) {
+    song.text = song.text.replaceAll(regexpForDecorate, match => {
+      return `<span class='song__chord'>${match}</span>`
+    })
+    return song
+  }
   
   function updateActiveSong(song) {
+    song = song ? decoratSong(song) : null
     setIsEditSong(false)
     setActiveSong(song)
   }
@@ -38,11 +49,15 @@ function App() {
     setIsEditSong(bool)
   }
 
+  function updateSongs(songs) {
+    setSongs(songs)
+  }
+
   function editSong(curSong) {
     setActiveSong(curSong)
     const newSongs = songs.map(song => ({...song}))
     newSongs[curSong.id] = curSong
-    setSongs(newSongs)
+    updateSongs(newSongs)
   }
 
   function addSong() {
@@ -64,7 +79,7 @@ function App() {
   function deleteSong(curSong) {
     const newSongs = songs.map(song => ({...song}))
     newSongs.splice(songs.indexOf(curSong), 1)
-    setSongs(newSongs)
+    updateSongs(newSongs)
     setOpenMenu(true)
     updateActiveSong(null)
   }
@@ -97,12 +112,13 @@ function App() {
       </div>
       <div className="panel__column _right">
         {activeSong ? <Song
-          isEditSong={isEditSong}
           updateIsEditSong={updateIsEditSong}
-          song={activeSong}
           editSong={editSong}
           deleteSong={deleteSong}
+          decoratSong={decoratSong}
           updateOpenMenu={updateOpenMenu}
+          song={activeSong}
+          isEditSong={isEditSong}
           categories={categories}
         /> : ''}
       </div>

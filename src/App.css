@@ -18,11 +18,13 @@
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
+  overflow: hidden;
 }
 
 .panel__column._left {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-gap: 10px;
 }
 
 .panel__header {
@@ -30,7 +32,6 @@
   grid-template-columns: 1fr max-content;
   grid-gap: 10px;
   align-items: center;
-  margin-bottom: 10px;
 }
 
 .panel__category::before {
@@ -214,6 +215,10 @@
   background-color: #ddd;
 }
 
+.list {
+  overflow: auto;
+}
+
 .list__item {
   display: grid;
   grid-template-columns: auto 1fr max-content;
@@ -323,18 +328,21 @@
 .song__text {
   white-space: pre;
   font-size: 16px;
-  border: none;
   background-color: #eee;
   padding: 5px;
   border-radius: 5px;
-  outline: none;
-  resize: none;
   width: 100%;
   height: 100%;
+  overflow: auto;
+  outline: none;
 }
 
 .song__text._disabled {
   background-color: #fff;
+}
+
+.song__chord {
+  font-weight: bold;
 }
 
 @media (max-width: 860px) {
