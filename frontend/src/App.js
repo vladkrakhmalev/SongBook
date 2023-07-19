@@ -1,10 +1,13 @@
+import { useState, useEffect } from 'react'
+
+import {allSongs} from './data'
+
 import Navigation from "./components/Navigation";
 import List from "./components/List";
 import Song from "./components/Song";
-import { useState } from 'react'
-import { tonalities } from "./tonalityData";
-import { allSongs } from "./data"
-import { categories } from "./categoriesData"
+
+const TONALITIES = ['H','A#','A','G#','G','F#','F','E','D#','D','C#','C',]
+const categories = ['Хлебопреломление','Жатва','Рождество']
 
 
 
@@ -15,17 +18,6 @@ function App() {
   const [openMenu, setOpenMenu] = useState(true)
   const [activeSong, setActiveSong] = useState(null)
   const [isEditSong, setIsEditSong] = useState(false)
-
-  const regexpForDecorate = new RegExp(`${tonalities.join('m?7?|')}m?7?`, 'g')
-  
-
-
-  function decoratSong(song) {
-    song.text = song.text.replaceAll(regexpForDecorate, match => {
-      return `<span class='song__chord'>${match}</span>`
-    })
-    return song
-  }
   
   function updateActiveSong(song) {
     song = song ? decoratSong(song) : null
@@ -53,17 +45,35 @@ function App() {
     setSongs(songs)
   }
 
+
+
+  // useEffect(() => getSongs(), [])
+
+  function getSongs() {
+    console.log('Get songs')
+    fetch('/api/songs/')
+      .then(res => res.json())
+      .then(setSongs)
+      .catch(console.error)
+  }
+
+  function decoratSong(song) {
+    const regexp = new RegExp(`${TONALITIES.join('m?7?|')}m?7?`, 'g')
+    song.text = song.text.replaceAll(regexp, match => {
+      return `<span class='song__chord'>${match}</span>`
+    })
+    return song
+  }
+
   function editSong(curSong) {
     setActiveSong(curSong)
-    const newSongs = songs.map(song => ({...song}))
-    newSongs[curSong.id] = curSong
-    updateSongs(newSongs)
+    songs[curSong.id] = curSong
+    updateSongs(songs)
   }
 
   function addSong() {
 
     const newSong = {
-      id: songs[songs.length-1].id+1,
       number: '',
       isFavorite: false,
       category: '',
@@ -120,6 +130,7 @@ function App() {
           song={activeSong}
           isEditSong={isEditSong}
           categories={categories}
+          tonalities={TONALITIES}
         /> : ''}
       </div>
     </div>

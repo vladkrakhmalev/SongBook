@@ -1,21 +1,9 @@
 import React from "react";
-import { tonalities } from "../tonalityData";
 import ContentEditable from "react-contenteditable";
 
 
 
-function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decoratSong, updateOpenMenu, categories}) {
-
-  const regexpForTranspose = new RegExp(`${tonalities.join('|')}`, 'g')
-
-  const textareaRef = React.useRef(null)
-  React.useLayoutEffect(() => {
-    textareaRef.current.style.height = "inherit"
-    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
-  }, [song.name])
-
-
-
+function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decoratSong, updateOpenMenu, categories, tonalities}) {
   
   function handleChange(value, prop) {
     const newSong = {...song}
@@ -27,16 +15,17 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decorat
     let id = tonalities.indexOf(tonality)
       
     if (isUp) {
-      id = id == 0 ? tonalities.length-1 : id-1
+      id = id === 0 ? tonalities.length-1 : id-1
     } else {
-      id = id == tonalities.length-1 ? 0 : id+1
+      id = id === tonalities.length-1 ? 0 : id+1
     }
 
     return tonalities[id]
   }
 
   function transpose(isUp) {
-    const text = song.text.replaceAll(regexpForTranspose, match => transposition(match, isUp))
+    const regexp = new RegExp(`${tonalities.join('|')}`, 'g')
+    const text = song.text.replaceAll(regexp, match => transposition(match, isUp))
     handleChange(text, 'text')
   }
 
@@ -48,8 +37,6 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decorat
       key={id}
     >{category}</option>
   })
-
-
   
   return (
     <div className={'song' + (isEditSong ? '' : " _disabled")}>
@@ -63,7 +50,6 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decorat
           value={song.name}
           readOnly={!isEditSong}
           onChange={e => handleChange(e.target.value, 'name')}
-          ref={textareaRef}
           rows={1}
           placeholder="Название песни"
         />

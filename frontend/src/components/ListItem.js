@@ -5,7 +5,7 @@ function ListItem({song, activeSong, updateActiveSong, editSong, updateOpenMenu}
     editSong(song)
   }
 
-  const itemClass = 'list__name' + (activeSong?.id == song.id ? ' _active' : '')
+  const itemClass = 'list__name' + (activeSong?.id === song.id ? ' _active' : '')
 
 
 

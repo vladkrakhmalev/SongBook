@@ -31,7 +31,7 @@ function Navigation({activeCategory, updateSearchText, updateCategory, categorie
           >Редактировать категории</div> */}
         </div>
       </div>
-      {activeCategory != 'Все' ?
+      {activeCategory !== 'Все' ?
       <div
           className="panel__category panel__btn _small _light"
           onClick={() => updateCategory('Все')}

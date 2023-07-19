@@ -5,8 +5,8 @@ function List(props) {
 
 
   const filterSong = songs => {
-    if (props.activeCategory != 'Все') {
-      props.activeCategory == 'Избранное' ?
+    if (props.activeCategory !== 'Все') {
+      props.activeCategory === 'Избранное' ?
         songs = songs.filter(song => song.isFavorite) :
         songs = songs.filter(song => song.category.match(props.activeCategory))
     }
