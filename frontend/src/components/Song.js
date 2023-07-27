@@ -1,14 +1,21 @@
-import React from "react";
-import ContentEditable from "react-contenteditable";
+import { useEffect, useState } from "react";
+import SongText from "./SongText";
 
 
 
-function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decoratSong, updateOpenMenu, categories, tonalities}) {
-  
+function Song({isEditSong, updateIsEditSong, deleteSong, saveSong, saveNewSong, updateOpenMenu, categories, tonalities, activeSong}) {
+
+  const [song, setSong] = useState(null)
+  const [sizeText, setSizeText] = useState(16)
+
+  useEffect(() => setSong(activeSong), [activeSong])
+
+
+
   function handleChange(value, prop) {
     const newSong = {...song}
     newSong[prop] = value
-    editSong(newSong)
+    setSong(newSong)
   }
 
   function transposition(tonality, isUp) {
@@ -25,11 +32,19 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decorat
 
   function transpose(isUp) {
     const regexp = new RegExp(`${tonalities.join('|')}`, 'g')
-    const text = song.text.replaceAll(regexp, match => transposition(match, isUp))
+    const text = song.text.map(block => {
+      block.value = block.value.replaceAll(regexp, match => transposition(match, isUp))
+      return block
+    })
     handleChange(text, 'text')
   }
 
 
+
+  const saveHandler = () => {
+    if (isEditSong) song._id ? saveSong(song) : saveNewSong(song)
+    updateIsEditSong(!isEditSong)
+  }
 
   const selectCategories = categories.map((category, id) => {
     return <option
@@ -38,73 +53,69 @@ function Song({isEditSong, updateIsEditSong, song, editSong, deleteSong, decorat
     >{category}</option>
   })
   
-  return (
-    <div className={'song' + (isEditSong ? '' : " _disabled")}>
-      <div className="song__header">
-        <div
-          className="panel__open-menu"
-          onClick={() => updateOpenMenu(true)}
-        ></div>
-        <textarea
-          className={'song__name' + (isEditSong ? '' : " _disabled")}
-          value={song.name}
-          readOnly={!isEditSong}
-          onChange={e => handleChange(e.target.value, 'name')}
-          rows={1}
-          placeholder="Название песни"
-        />
-        <div className="panel__menu menu">
-          <div className="menu__wrapper">
-            <div className="menu__tonality">
-              <div
-                className="menu__tonality-btn"
-                onClick={() => transpose(false)}
-              >-</div>
-              <div
-                className="menu__tonality-btn"
-                onClick={() => transpose(true)}
-              >+</div>
-              <div className="menu__tonality-name">Транспонировать</div>
-            </div>
-            <div
-              onClick={() => {
-                editSong(decoratSong(song))
-                updateIsEditSong(!isEditSong)
-              }}
-              className={"panel__btn _small _light" + (isEditSong ? " _save" : " _edit")}
-            >{isEditSong ? 'Сохранить' : 'Редактировать'}</div>
-            <div
-              onClick={() => deleteSong(song)}
-              className="panel__btn _small _light _delete"
-            >Удалить</div>
+  return <>
+    {song ? <div className={'song' + (isEditSong ? '' : " _disabled")}>
+    <div className="song__header">
+      <div className="panel__open-menu" onClick={() => updateOpenMenu(true)}></div>
+
+      <textarea
+        className={'song__name' + (isEditSong ? '' : " _disabled")}
+        value={song.name}
+        readOnly={!isEditSong}
+        onChange={e => handleChange(e.target.value, 'name')}
+        rows={1}
+        placeholder="Название песни"
+      />
+
+      <div className="panel__menu menu">
+        <div className="menu__wrapper">
+          <div className="menu__tonality">
+            <div className="menu__tonality-btn" onClick={() => setSizeText(sizeText-2)}>-</div>
+            <div className="menu__tonality-btn" onClick={() => setSizeText(sizeText+2)}>+</div>
+            <div className="menu__tonality-name">Изменить размер</div>
           </div>
+
+          <div className="menu__tonality">
+            <div className="menu__tonality-btn" onClick={() => transpose(false)}>-</div>
+            <div className="menu__tonality-btn" onClick={() => transpose(true)}>+</div>
+            <div className="menu__tonality-name">Транспонировать</div>
+          </div>
+
+          <div 
+            onClick={saveHandler}
+            className={"panel__btn _small _light" + (isEditSong ? " _save" : " _edit")}
+          >{isEditSong ? 'Сохранить' : 'Редактировать'}</div>
+
+          <div onClick={() => deleteSong(song)} className="panel__btn _small _light _delete">Удалить</div>
         </div>
       </div>
-      {isEditSong ? <div className="song__subheader">
-        <select
-          className="song__select"
-          defaultValue={song.category}
-          onChange={e => handleChange(e.target.value, 'category')}
-        >
-          <option value=''>Выберете категорию</option>
-          {selectCategories}
-        </select>
-        <input
-          className="song__number"
-          type="number"
-          placeholder="Номер"
-          value={song.number || ''}
-          onChange={e => handleChange(e.target.value, 'number')}
-        />
-      </div> : ''}
-      <ContentEditable
-        className={'song__text' + (isEditSong ? '' : " _disabled")}
-        disabled={!isEditSong}
-        onChange={e => handleChange(e.currentTarget.innerHTML, 'text')}
-        html={song.text}
-      />
+
     </div>
-  )
+    {isEditSong ? <div className="song__subheader">
+      <select
+        className="song__select"
+        defaultValue={song.category}
+        onChange={e => handleChange(e.target.value, 'category')}
+      >
+        <option value=''>Выберете категорию</option>
+        {selectCategories}
+      </select>
+      <input
+        className="song__number"
+        type="number"
+        placeholder="Номер"
+        value={song.number || ''}
+        onChange={e => handleChange(e.target.value, 'number')}
+      />
+    </div> : ''}
+    <SongText
+      blocks={song.text}
+      sizeText={sizeText}
+      disabled={!isEditSong}
+      handleChange={handleChange}
+    />
+  </div> : ''}
+  </>
 }
 
 

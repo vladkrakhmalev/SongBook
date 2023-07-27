@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
 
-import {allSongs} from './data'
-
 import Navigation from "./components/Navigation";
 import List from "./components/List";
 import Song from "./components/Song";
@@ -12,12 +10,13 @@ const categories = ['Хлебопреломление','Жатва','Рожде�
 
 
 function App() {
-  const [songs, setSongs] = useState(allSongs)
+  const [songs, setSongs] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [activeCategory, setActiveCategory] = useState('Все')
   const [openMenu, setOpenMenu] = useState(true)
   const [activeSong, setActiveSong] = useState(null)
   const [isEditSong, setIsEditSong] = useState(false)
+  const [loading, setLoading] = useState(false)
   
   function updateActiveSong(song) {
     song = song ? decoratSong(song) : null
@@ -41,36 +40,30 @@ function App() {
     setIsEditSong(bool)
   }
 
-  function updateSongs(songs) {
-    setSongs(songs)
-  }
 
 
-
-  // useEffect(() => getSongs(), [])
+  useEffect(() => getSongs(), [])
 
   function getSongs() {
-    console.log('Get songs')
     fetch('/api/songs/')
       .then(res => res.json())
       .then(setSongs)
+      .then(() => setLoading(true))
       .catch(console.error)
   }
 
   function decoratSong(song) {
-    const regexp = new RegExp(`${TONALITIES.join('m?7?|')}m?7?`, 'g')
-    song.text = song.text.replaceAll(regexp, match => {
-      return `<span class='song__chord'>${match}</span>`
-    })
+    const regexp = new RegExp(`>?[${TONALITIES.join('m?7?|')}m?7?]`, 'g')
+
+    song.text = song.text.map(block => {
+      block.value = block.value.replaceAll(regexp, match => {
+        return match.match('>') === null ? `<span class='song__chord'>${match}</span>` : match
+      })
+    return block })
+
     return song
   }
-
-  function editSong(curSong) {
-    setActiveSong(curSong)
-    songs[curSong.id] = curSong
-    updateSongs(songs)
-  }
-
+  
   function addSong() {
 
     const newSong = {
@@ -78,18 +71,57 @@ function App() {
       isFavorite: false,
       category: '',
       name: '',
-      text: '',
+      text: [{
+        type: '',
+        value: '',
+      }],
     }
 
-    editSong(newSong)
+    setActiveSong(newSong)
     setOpenMenu(false)
     setIsEditSong(true)
   }
 
+  function saveNewSong(curSong) {
+    fetch('/api/song', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(curSong)
+    })
+      .then(res => res.json())
+      .then(song => {
+        setActiveSong(song)
+        songs.push(song)
+        setSongs(songs)
+      })
+  }
+
+  function saveSong(curSong) {
+    curSong = decoratSong(curSong)
+    const id = songs.findIndex(song => song._id === curSong._id)
+    songs[id] = curSong
+    setSongs(songs)
+
+    fetch('/api/song/' + curSong._id, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(curSong)
+    })
+  }
+
   function deleteSong(curSong) {
-    const newSongs = songs.map(song => ({...song}))
-    newSongs.splice(songs.indexOf(curSong), 1)
-    updateSongs(newSongs)
+
+    if (curSong._id) {
+      songs.splice(songs.indexOf(curSong), 1)
+      setSongs(songs)
+
+      fetch('/api/song/' + curSong._id, {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(curSong)
+      })
+    }
+    
     setOpenMenu(true)
     updateActiveSong(null)
   }
@@ -106,32 +138,31 @@ function App() {
           categories={categories}
           activeCategory={activeCategory}
         />
-        <List
-          updateActiveSong={updateActiveSong}
-          updateOpenMenu={updateOpenMenu}
-          editSong={editSong}
-          activeSong={activeSong}
-          searchText={searchText}
-          activeCategory={activeCategory}
-          songs={songs}
-        />
-        <div
-          className="panel__btn _add"
-          onClick={addSong}
-        >Добавить песню</div>
+        {!loading ? <div className='loader'></div> :
+          <List
+            updateActiveSong={updateActiveSong}
+            updateOpenMenu={updateOpenMenu}
+            saveSong={saveSong}
+            activeSong={activeSong}
+            searchText={searchText}
+            activeCategory={activeCategory}
+            songs={songs}
+          />
+        }
+        <div className="panel__btn _add" onClick={addSong}>Добавить песню</div>
       </div>
       <div className="panel__column _right">
-        {activeSong ? <Song
+        <Song
           updateIsEditSong={updateIsEditSong}
-          editSong={editSong}
           deleteSong={deleteSong}
-          decoratSong={decoratSong}
+          saveSong={saveSong}
+          saveNewSong={saveNewSong}
           updateOpenMenu={updateOpenMenu}
-          song={activeSong}
+          activeSong={activeSong}
           isEditSong={isEditSong}
           categories={categories}
           tonalities={TONALITIES}
-        /> : ''}
+        />
       </div>
     </div>
   )

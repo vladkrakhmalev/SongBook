@@ -1,23 +1,20 @@
 const {Schema, model} = require('mongoose')
 
 const songSchema = new Schema({
-  number: {
-    type: Number
-  },
+  number: Number,
   isFavorite: {
     type: Boolean,
     default: false
   },
   category: {
-    type: Array,
+    type: String,
     default: []
   },
-  name: {
-    type: String
-  },
-  text: {
-    type: String
-  }
+  name: String,
+  text: [{
+    type: {type: String},
+    value: String
+  }]
 })
 
 module.exports = model('Song', songSchema)
