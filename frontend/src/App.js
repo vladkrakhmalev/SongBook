@@ -53,7 +53,7 @@ function App() {
   }
 
   function decoratSong(song) {
-    const regexp = new RegExp(`>?[${TONALITIES.join('m?7?|')}m?7?]`, 'g')
+    const regexp = new RegExp(`>?(${TONALITIES.join('m?7?|')}m?7?)`, 'g')
 
     song.text = song.text.map(block => {
       block.value = block.value.replaceAll(regexp, match => {
