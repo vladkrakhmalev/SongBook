@@ -20,17 +20,16 @@ function ListItem({song, activeSong, updateActiveSong, updateOpenMenu, saveSong}
   return (
     <div className='list__item'>
       <div
-        className={isFavorite ? 'favorite _active' : 'favorite'}
-        onClick={changeFavorite}
-      ></div>
-      <div
         className={itemClass}
         onClick={() => {
           updateActiveSong(song)
           updateOpenMenu(false)
         }}
-      >{song.name}</div>
-      <div>{song.number}</div>      
+      >{song.name}</div> 
+      <div
+        className={isFavorite ? 'favorite _active' : 'favorite'}
+        onClick={changeFavorite}
+      ></div>
     </div>
   )
 }

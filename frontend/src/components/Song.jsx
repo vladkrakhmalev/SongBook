@@ -6,7 +6,7 @@ import SongText from "./SongText";
 function Song({isEditSong, updateIsEditSong, deleteSong, saveSong, saveNewSong, updateOpenMenu, categories, tonalities, activeSong}) {
 
   const [song, setSong] = useState(null)
-  const [sizeText, setSizeText] = useState(16)
+  const [sizeText, setSizeText] = useState(18)
 
   useEffect(() => setSong(activeSong), [activeSong])
 
@@ -100,13 +100,6 @@ function Song({isEditSong, updateIsEditSong, deleteSong, saveSong, saveNewSong, 
         <option value=''>Выберете категорию</option>
         {selectCategories}
       </select>
-      <input
-        className="song__number"
-        type="number"
-        placeholder="Номер"
-        value={song.number || ''}
-        onChange={e => handleChange(e.target.value, 'number')}
-      />
     </div> : ''}
     <SongText
       blocks={song.text}

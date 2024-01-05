@@ -26,9 +26,6 @@ function Navigation({activeCategory, updateSearchText, updateCategory, categorie
             className="menu__item"    
           >Избранное</div>
           {categories}
-          {/* <div
-            className="panel__btn _edit _light _small"
-          >Редактировать категории</div> */}
         </div>
       </div>
       {activeCategory !== 'Все' ?

@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
-
-import Navigation from "./components/Navigation";
-import List from "./components/List";
-import Song from "./components/Song";
-
+import { useNavigate } from 'react-router-dom';
+import { sendRequest } from '../services/apiServices';
+import Navigation from "../components/Navigation";
+import List from "../components/List";
+import Song from "../components/Song";
 const TONALITIES = ['H','A#','A','G#','G','F#','F','E','D#','D','C#','C',]
 const categories = ['Хлебопреломление','Жатва','Рождество']
 
 
 
-function App() {
+export default function Main() {
   const [songs, setSongs] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [activeCategory, setActiveCategory] = useState('Все')
@@ -17,7 +17,10 @@ function App() {
   const [activeSong, setActiveSong] = useState(null)
   const [isEditSong, setIsEditSong] = useState(false)
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
   
+
+
   function updateActiveSong(song) {
     song = song ? decoratSong(song) : null
     setIsEditSong(false)
@@ -42,15 +45,37 @@ function App() {
 
 
 
-  useEffect(() => getSongs(), [])
+  useEffect(() => {getSongs()}, [])
 
-  function getSongs() {
-    fetch('/api/songs/')
-      .then(res => res.json())
-      .then(setSongs)
-      .then(() => setLoading(true))
-      .catch(console.error)
+  async function getSongs() {
+    const result = await sendRequest('/api/songs/', 'GET')
+    setSongs(result.songs)
+    setLoading(true)
   }
+
+  async function saveNewSong(song) {
+    const result = await sendRequest('/api/song', 'POST', song)
+    setSongs(result.songs)
+  }
+
+  async function saveSong(song) {
+    const result = await sendRequest('/api/song/' + song._id, 'PUT', decoratSong(song))
+    setSongs(result.songs)
+  }
+
+  async function deleteSong(song) {
+    const result = await sendRequest('/api/song/' + song._id, 'DELETE', song)
+    setSongs(result.songs)
+    setOpenMenu(true)
+    updateActiveSong(null)
+  }
+
+  async function logout() {
+    await sendRequest('/api/logout/', 'POST')
+    navigate('/auth')
+  }
+
+
 
   function decoratSong(song) {
     const regexp = new RegExp(`>?(${TONALITIES.join('m?7?|')}m?7?)`, 'g')
@@ -67,7 +92,6 @@ function App() {
   function addSong() {
 
     const newSong = {
-      number: '',
       isFavorite: false,
       category: '',
       name: '',
@@ -80,50 +104,6 @@ function App() {
     setActiveSong(newSong)
     setOpenMenu(false)
     setIsEditSong(true)
-  }
-
-  function saveNewSong(curSong) {
-    fetch('/api/song', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(curSong)
-    })
-      .then(res => res.json())
-      .then(song => {
-        setActiveSong(song)
-        songs.push(song)
-        setSongs(songs)
-      })
-  }
-
-  function saveSong(curSong) {
-    curSong = decoratSong(curSong)
-    const id = songs.findIndex(song => song._id === curSong._id)
-    songs[id] = curSong
-    setSongs(songs)
-
-    fetch('/api/song/' + curSong._id, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(curSong)
-    })
-  }
-
-  function deleteSong(curSong) {
-
-    if (curSong._id) {
-      songs.splice(songs.indexOf(curSong), 1)
-      setSongs(songs)
-
-      fetch('/api/song/' + curSong._id, {
-        method: 'DELETE',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(curSong)
-      })
-    }
-    
-    setOpenMenu(true)
-    updateActiveSong(null)
   }
 
   
@@ -150,6 +130,7 @@ function App() {
           />
         }
         <div className="panel__btn _add" onClick={addSong}>Добавить песню</div>
+        <div className="panel__btn _light" onClick={logout}>Выйти</div>
       </div>
       <div className="panel__column _right">
         <Song
@@ -167,5 +148,3 @@ function App() {
     </div>
   )
 }
-
-export default App

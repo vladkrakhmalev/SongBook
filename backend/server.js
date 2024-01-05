@@ -1,25 +1,34 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
+const cors = require('cors')
+const {FRONTEND_URL, PORT, loginDB, passwordDB} = require('./config')
+const songRoutes = require('./routes/songRoutes')
+const authRoutes = require('./routes/authRoutes')
 const app = express()
-const songsRoutes = require('./routes/songs')
-const PORT = 3001
 
 app.use(express.json())
-app.use(songsRoutes)
+app.use(cookieParser())
+app.use(cors({
+  origin: [FRONTEND_URL],
+  credentials: true
+}))
+app.use('/api', songRoutes)
+app.use('/api', authRoutes)
 
 async function start() {
   try {
     
     await mongoose.connect(
-      'mongodb+srv://vladkrakhmalev:9NS-dPd-C5n-XMA@cluster.zirubkr.mongodb.net/songs'
+      `mongodb+srv://${loginDB}:${passwordDB}@cluster.zirubkr.mongodb.net/songs`
     )
 
     app.listen(PORT, () => {
-      console.log(`Server has been started on port ${PORT}...`)
+      console.log(`Server started on port ${PORT}...`)
     })
  
-  } catch(error) {
-    console.log(error)
+  } catch(e) {
+    console.log(e)
   }
 }
 
