@@ -15,6 +15,9 @@ class songController {
     try {
       const user = await User.findById(req.userID)
       const song = user.songs.id(req.params.id)
+      if (song === null) {
+        res.json({success: false, message: 'Песня не найдена'})   
+      }
       res.json({success: true, song})
     } catch (e) {
       return res.json({success: false, message: e})   
@@ -24,13 +27,14 @@ class songController {
   async addSong(req, res) {
     try {
       const user = await User.findById(req.userID)
-      user.songs.push({
+      const song = user.songs.create({
         category: req.body.category,
         name: req.body.name,
         text: req.body.text,
       })
+      user.songs.push(song)
       await user.save()
-      res.json({success:true, songs: user.songs})
+      res.json({success:true, song})
     } catch (e) {
       return res.json({success: false, message: e})   
     }

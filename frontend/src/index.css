@@ -10,37 +10,6 @@ div, p, a, button, input {
   color: #000
 }
 
-@keyframes start {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes rotation-loader {
-	0% {
-		transform:rotate(0deg);
-	}
-	100% {
-		transform:rotate(360deg);
-	}
-}
-
-.loader {
-  width: 50px;
-  height: 50px;
-  background-image: url('../public/img/loader.png');
-  filter: opacity(0.2);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  margin: auto;
-  animation: start .3s 1, rotation-loader 1s infinite ;
-	animation-timing-function: linear;
-}
-
 .panel {
   display: grid;
   grid-template-columns: 400px 1fr;
@@ -313,7 +282,6 @@ div, p, a, button, input {
 
 .list {
   overflow: auto;
-  animation: start .5s 1;
 }
 
 .list__item {
@@ -321,13 +289,13 @@ div, p, a, button, input {
   grid-template-columns: 1fr auto;
   align-items: center;
   grid-gap: 10px;
-  text-decoration: none;
 }
 
 .list__name {
   padding: 5px 0;
   transition: .2s;
   word-break: break-all;
+  text-decoration: none;
 }
 
 .list__name:hover,
@@ -354,12 +322,16 @@ div, p, a, button, input {
   background-repeat: no-repeat;
   cursor: pointer;
   transition: .2s;
-  opacity: 0;
+  opacity: 0.1;
   filter: grayscale(1);
 }
 
-.favorite._active {
+.favorite:hover {
   opacity: 0.2;
+}
+
+.favorite._active {
+  opacity: 0.8;
 }
 
 .song {
@@ -367,7 +339,6 @@ div, p, a, button, input {
   grid-template-rows: auto auto 1fr;
   height: 100%;
   grid-gap: 15px;
-  animation: start .3s 1;
 }
 
 .song._disabled {
@@ -413,6 +384,10 @@ div, p, a, button, input {
   font-size: 18px;
 }
 
+.song__select._disabled {
+  display: none;
+}
+
 .song__texts { 
   overflow: auto;
   width: 100%;
@@ -427,13 +402,11 @@ div, p, a, button, input {
   padding: 20px;
   border-radius: 5px;
   transition: .1s;
-  cursor: grab;
 }
 
 .song__text._disabled {
   padding: 5px;
   background-color: #fff;
-  cursor: default;
 }
 
 .song__text-type {
